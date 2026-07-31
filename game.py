@@ -1,15 +1,13 @@
 import board
 import constants as c
-import random
-import time
 
 
 class Game:
     def __init__(self, chose_stone, com_level):
         self.b = board.Board()
-        self.PLAYER_TURN = chose_stone if chose_stone == 1 else -1
-        self.COM_TURN = self.PLAYER_TURN * -1
-        self.COM_LEVEL = com_level
+        self.player_turn = chose_stone if chose_stone == 1 else -1
+        self.com_turn = self.player_turn * -1
+        self.com_level = com_level
         self.current_turn = 1
 
     def play_game(self) -> str:
@@ -23,7 +21,7 @@ class Game:
 
                 self.reverse_stones(
                     self.player_move(valid_squares)
-                    if self.current_turn == self.PLAYER_TURN
+                    if self.current_turn == self.player_turn
                     else self.com_move1(valid_squares)
                 )
 
@@ -122,18 +120,6 @@ class Game:
 
         return coord
 
-    def com_move1(self, valid_squares) -> list:
-        print("COMの番です。")
-        time.sleep(1)
-        coord = random.choice(valid_squares)
-        return coord
-
-    def com_move2(self, valid_squares) -> list:
-        print("COMの番です。")
-        time.sleep(1)
-        coord = []
-        return coord
-
     def reverse_stones(self, coord):
         y = coord[0]
         x = coord[1]
@@ -176,12 +162,12 @@ class Game:
         stones = self.count_stones()
 
         if stones[0] > stones[1]:
-            if self.PLAYER_TURN == c.BS.get("BLACK"):
+            if self.player_turn == c.BS.get("BLACK"):
                 return c.RESULTS.get("WIN")
             else:
                 return c.RESULTS.get("LOSE")
         elif stones[0] < stones[1]:
-            if self.PLAYER_TURN == c.BS.get("BLACK"):
+            if self.player_turn == c.BS.get("BLACK"):
                 return c.RESULTS.get("LOSE")
             else:
                 return c.RESULTS.get("WIN")

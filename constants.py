@@ -7,17 +7,16 @@ WALL = 9
 GREETING = "ようこそ!\nここではリバーシをプレイできます。"
 
 SELECT_TURN_CALLED = "先手/後手を選択します。"
-PROMPT_SELECT_TURN = "先手なら" + BLACK + "、後手なら" + WHITE + "を入力してください。"
-PROMPT_SYMBOL = " > "
+PROMPT_SELECT_TURN = "先手なら" + BLACK + "、後手なら" + WHITE + "を入力> "
 
 GAME_START = "対局開始"
 
-BLACK_COUNT = "黒の数:"
-WHITE_COUNT = "白の数:"
+BC = "黒の数:"
+WC = "白の数:"
 
-PLAYER_MOVE_CALLED = "あなたの番です。"
-PROMPT_Y = "行（Y座標）を入力してください。>"
-PROMPT_X = "列（X座標）を入力してください。>"
+PLAYER_MOVE_CALLED = "あなたの番です。\n投了：2回連続で-1"
+PROMPT_Y = "行（Y座標）> "
+PROMPT_X = "列（X座標）> "
 
 COM_THINKING = "COMの番です。"
 
@@ -29,3 +28,4 @@ GAME_OVER = "終了します。"
 BLACK_WIN = "先手の勝ち"
 WHITE_WIN = "後手の勝ち"
 DRAW = "引き分け"
+SURRENDER = "投了しました。\nあなたの負け"

@@ -1,3 +1,4 @@
+import inspect
 import random
 import time
 
@@ -5,12 +6,12 @@ import constants as c
 import values as v
 
 
-def select_turn() -> int:
+def select_turn() -> None:
     print(c.GREETING)
 
     while True:
         try:
-            v.player_turn = int(input(c.PROMPT_SELECT_TURN + c.PROMPT_SYMBOL))
+            v.player_turn = int(input(c.PROMPT_SELECT_TURN))
 
             if v.player_turn == c.BLACK or v.player_turn == c.WHITE:
                 v.com_turn = v.player_turn * -1
@@ -21,26 +22,28 @@ def select_turn() -> int:
             print(c.INPUT_ERROR)
 
 
-def set_board():
+def set_board() -> None:
     # すべてのマスを空にする
     for y in range(1, c.ROWS + 1):
         for x in range(1, c.COLS + 1):
             v.board[y][x] = c.SPACE
 
     # 最初に配置する石
-    v.board[c.ROWS / 2][c.COLS / 2] = v.board[c.ROWS / 2 + 1][c.COLS / 2 + 1] = c.WHITE
-    v.board[c.ROWS / 2][c.COLS / 2 + 1] = v.board[c.ROWS / 2 + 1][c.COLS / 2] = c.BLACK
+    v.board[c.ROWS / 2][c.COLS / 2] = c.WHITE
+    v.board[c.ROWS / 2 + 1][c.COLS / 2 + 1] = c.WHITE
+    v.board[c.ROWS / 2][c.COLS / 2 + 1] = c.BLACK
+    v.board[c.ROWS / 2 + 1][c.COLS / 2] = c.BLACK
 
 
 def play() -> None:
     turn_counts = 0
-    current_turn = c.BLACK
+    cur = c.BLACK
     pass_count = 0
 
     print(c.GAME_START)
 
     for _ in range(c.ROWS * c.COLS):
-        valid_squares = check_valid(current_turn)
+        valid_squares = check_valid(cur)
 
         if len(valid_squares) > 0:
             pass_count = 0
@@ -51,11 +54,15 @@ def play() -> None:
 
             move = (
                 player_move(valid_squares)
-                if current_turn == v.player_turn
+                if cur == v.player_turn
                 else com_move(valid_squares)
             )
 
-            reverse(move)
+            if move == [-1, -1]:
+                print(c.SURRENDER)
+                return
+
+            check_around(move[0], move[1])
 
             turn_counts += 1
         else:
@@ -67,46 +74,60 @@ def play() -> None:
             print(c.PASS)
             time.sleep(1)
 
-        current_turn *= -1
+        cur *= -1
 
     print(result())
 
 
-def check_valid(current_turn) -> []:
+def check_valid(cur):
     valid_squares = []
 
     for y in range(1, c.ROWS + 1):
         for x in range(1, c.COLS):
-            if v.board[y][x] == c.SPACE:
-                valid_squares.append(check_around(x, y, current_turn))
+            front = check_around(y, x, cur)
+
+            if v.board[y][x] == c.SPACE and front is not None:
+                valid_squares.append(v.board[y][x])
+
+    print(type(valid_squares))
     return valid_squares
 
 
-def check_around(x, y, current_turn) -> int[2]:
-    aro_y = y
-    aro_x = x
-    opponent = current_turn * -1
+def check_around(y, x, cur):
+    aroy = y
+    arox = x
 
-    for coe_y in range(-1, 2):
-        aro_y += coe_y
+    for coey in range(-1, 2):
+        aroy += coey
 
-        for coe_x in range(-1, 2):
-            aro_x += coe_x
+        for coex in range(-1, 2):
+            arox += coex
 
-            if v.board[aro_y][aro_x] == opponent:
-                return check_front(aro_x, aro_y, coe_x, coe_y, current_turn, opponent)
+            if v.board[aroy][arox] == cur * -1:
+                front = check_front(aroy, arox, coey, coex, cur)
+
+                caller = inspect.stack()[1].function
+
+                if caller == "check_valid":
+                    print(type(front))
+                    return front
+                else:
+                    froy = front[0]
+                    frox = front[1]
+
+                    reverse(froy, frox, coey, coex, cur)
 
 
-def check_front(aro_x, aro_y, coe_x, coe_y, current_turn, opponent) -> int[2]:
-    fro_y = aro_y
-    fro_x = aro_x
+def check_front(aroy, arox, coey, coex, cur):
+    froy = aroy
+    frox = arox
 
-    while v.board[fro_y][fro_x] == opponent:
-        fro_y += coe_y
-        fro_x += coe_x
+    while v.board[froy][frox] == cur * -1:
+        froy += coey
+        frox += coex
 
-        if v.board[fro_y][fro_x] == current_turn:
-            return v.board[fro_y][fro_x]
+        if v.board[froy][frox] == cur:
+            return [froy, frox]
 
     return
 
@@ -141,7 +162,7 @@ def draw_line() -> None:
     print("+")
 
 
-def count_stones() -> int[2]:
+def count_stones():
     bc = wc = 0
 
     for y in range(1, c.ROWS + 1):
@@ -151,24 +172,39 @@ def count_stones() -> int[2]:
             elif v.board[y][x] == c.WHITE:
                 wc += 1
 
-    print("黒の数:", bc, "\t白の数:", wc)
+    print(c.BC, bc, " ", c.WC, wc)
 
+    print(type([bc, wc]))
     return [bc, wc]
 
 
-def player_move(valid_squares) -> int[2]:
-    return
+def player_move(valid_squares):
+    print(c.PLAYER_MOVE_CALLED)
+
+    while True:
+        try:
+            y = int(input(c.PROMPT_Y))
+            x = int(input(c.PROMPT_X))
+            move = [y, x]
+
+            return move
+        except ValueError:
+            print(c.INPUT_ERROR)
 
 
-def com_move(valid_squares) -> int[2]:
+def com_move(valid_squares):
     print(c.COM_THINKING)
     time.sleep(2)
 
     return valid_squares[random.randint(0, len(valid_squares))]
 
 
-def reverse(move):
-    return
+def reverse(y, x, coey, coex, cur) -> None:
+    while v.board[y][x] == cur:
+        y -= coey
+        x -= coex
+
+        v.board[y][x] *= -1
 
 
 def result() -> str:
@@ -176,7 +212,7 @@ def result() -> str:
 
     final_counts = count_stones()
 
-    print(c.BLACK_COUNT, final_counts[0], c.WHITE_COUNT, final_counts[1])
+    print(c.BC, final_counts[0], c.WC, final_counts[1])
 
     if final_counts[0] > final_counts[1]:
         return c.BLACK_WIN

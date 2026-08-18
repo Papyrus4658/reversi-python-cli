@@ -7,7 +7,7 @@ import values as v
 
 
 def select_turn() -> None:
-    print(c.GREETING)
+    print(c.SELECT_TURN_CALLED)
 
     while True:
         try:
@@ -40,7 +40,7 @@ def set_board() -> None:
 
 
 def play() -> None:
-    turn_counts = 1
+    current_turn = 0
     cur = c.BLACK
     pass_count = 0
 
@@ -51,6 +51,8 @@ def play() -> None:
         valid_squares = check_valid(cur)
 
         if len(valid_squares) > 0:
+            current_turn += 1
+            print(current_turn, "手目")
             pass_count = 0
 
             count_stones()
@@ -68,8 +70,6 @@ def play() -> None:
                 return
 
             check_around(move[0], move[1], cur)
-
-            turn_counts += 1
         else:
             pass_count += 1
 

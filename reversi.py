@@ -1,24 +1,24 @@
+import random
+import time
+
 import constants as c
 import values as v
 
 
 def select_turn() -> int:
-    print("先手/後手を決定します。")
+    print(c.GREETING)
 
     while True:
         try:
-            player = int(
-                input(
-                    "先手なら", c.BLACK, "、後手なら", c.WHITE, "を入力してください。"
-                )
-            )
+            v.player_turn = int(input(c.PROMPT_SELECT_TURN + c.PROMPT_SYMBOL))
 
-            if player == c.BLACK or player == c.WHITE:
-                return player
+            if v.player_turn == c.BLACK or v.player_turn == c.WHITE:
+                v.com_turn = v.player_turn * -1
+                return
             else:
-                print("正しい値を入力してください。")
+                print(c.INPUT_ERROR)
         except ValueError:
-            print("数値を入力してください。")
+            print(c.INPUT_ERROR)
 
 
 def set_board():
@@ -32,20 +32,113 @@ def set_board():
     v.board[c.ROWS / 2][c.COLS / 2 + 1] = v.board[c.ROWS / 2 + 1][c.COLS / 2] = c.BLACK
 
 
-def play():
+def play() -> None:
+    turn_counts = 0
+    current_turn = c.BLACK
+    pass_count = 0
+
+    print(c.GAME_START)
+
+    for _ in range(c.ROWS * c.COLS):
+        valid_squares = check_valid(current_turn)
+
+        if len(valid_squares) > 0:
+            pass_count = 0
+
+            draw_board()
+
+            count_stones()
+
+            move = (
+                player_move(valid_squares)
+                if current_turn == v.player_turn
+                else com_move(valid_squares)
+            )
+
+            reverse(move)
+
+            turn_counts += 1
+        else:
+            pass_count += 1
+
+            if pass_count > 1:
+                break
+
+            print(c.PASS)
+            time.sleep(1)
+
+        current_turn *= -1
+
+    print(result())
+
+
+def check_valid(current_turn) -> []:
+    valid_squares = []
+
+    for y in range(1, c.ROWS + 1):
+        for x in range(1, c.COLS):
+            if v.board[y][x] == c.SPACE:
+                valid_squares.append(check_around(x, y, current_turn))
+    return valid_squares
+
+
+def check_around(x, y, current_turn) -> int[2]:
+    aro_y = y
+    aro_x = x
+    opponent = current_turn * -1
+
+    for coe_y in range(-1, 2):
+        aro_y += coe_y
+
+        for coe_x in range(-1, 2):
+            aro_x += coe_x
+
+            if v.board[aro_y][aro_x] == opponent:
+                return check_front(aro_x, aro_y, coe_x, coe_y, current_turn, opponent)
+
+
+def check_front(aro_x, aro_y, coe_x, coe_y, current_turn, opponent) -> int[2]:
+    fro_y = aro_y
+    fro_x = aro_x
+
+    while v.board[fro_y][fro_x] == opponent:
+        fro_y += coe_y
+        fro_x += coe_x
+
+        if v.board[fro_y][fro_x] == current_turn:
+            return v.board[fro_y][fro_x]
+
     return
 
 
-def check_valid():
-    return
+def draw_board() -> None:
+    print(" ")
+    for x in range(1, c.COLS + 1):
+        print(" " * 2, x, end="")
+
+    draw_line()
+
+    for y in range(1, c.ROWS + 1):
+        print(y, end="|")
+
+        for x in range(1, c.COLS):
+            if v.board[y][x] == c.BLACK:
+                print("●", end="|")
+            elif v.board[y][x] == c.WHITE:
+                print("◯", end="|")
+            else:
+                print("　", end="|")
+
+        print()
+
+        draw_line()
 
 
-def check_around():
-    return
+def draw_line() -> None:
+    for _ in range(c.COLS):
+        print("+ー", end="")
 
-
-def check_front():
-    return
+    print("+")
 
 
 def count_stones() -> int[2]:
@@ -63,45 +156,44 @@ def count_stones() -> int[2]:
     return [bc, wc]
 
 
-def player_move():
+def player_move(valid_squares) -> int[2]:
     return
 
 
-def com_move():
-    return
+def com_move(valid_squares) -> int[2]:
+    print(c.COM_THINKING)
+    time.sleep(2)
+
+    return valid_squares[random.randint(0, len(valid_squares))]
 
 
-def reverse():
+def reverse(move):
     return
 
 
 def result() -> str:
-    final_count = count_stones()
+    print(c.GAME_OVER)
 
-    print(c.BLACK_COUNT, final_count[0], c.WHITE_COUNT, final_count[1])
+    final_counts = count_stones()
 
-    if final_count[0] > final_count[1]:
+    print(c.BLACK_COUNT, final_counts[0], c.WHITE_COUNT, final_counts[1])
+
+    if final_counts[0] > final_counts[1]:
         return c.BLACK_WIN
-    elif final_count[0] < final_count[1]:
+    elif final_counts[0] < final_counts[1]:
         return c.WHITE_WIN
     else:
         return c.DRAW
 
 
-def main():
+def main() -> None:
     print(c.GREETING)
 
-    # 先後の決定
-    v.player_turn = select_turn()
-    v.com_turn = v.player_turn * -1
+    select_turn()
 
-    # 盤をリセット
     set_board()
 
-    # 対局
-
-    # 終局
-    print(result)
+    play()
 
 
 if __name__ == "__main__":

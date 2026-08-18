@@ -11,7 +11,8 @@ def select_turn() -> None:
 
     while True:
         try:
-            v.player_turn = int(input(c.PROMPT_SELECT_TURN))
+            print("先手なら", c.BLACK, "、後手なら", c.WHITE, "を入力> ", end="")
+            v.player_turn = int(input())
 
             if v.player_turn == c.BLACK or v.player_turn == c.WHITE:
                 v.com_turn = v.player_turn * -1
@@ -29,28 +30,32 @@ def set_board() -> None:
             v.board[y][x] = c.SPACE
 
     # 最初に配置する石
-    v.board[c.ROWS / 2][c.COLS / 2] = c.WHITE
-    v.board[c.ROWS / 2 + 1][c.COLS / 2 + 1] = c.WHITE
-    v.board[c.ROWS / 2][c.COLS / 2 + 1] = c.BLACK
-    v.board[c.ROWS / 2 + 1][c.COLS / 2] = c.BLACK
+    row_center = int(c.ROWS / 2)
+    col_center = int(c.COLS / 2)
+
+    v.board[row_center][col_center] = c.WHITE
+    v.board[row_center + 1][col_center + 1] = c.WHITE
+    v.board[row_center][col_center + 1] = c.BLACK
+    v.board[row_center + 1][col_center] = c.BLACK
 
 
 def play() -> None:
-    turn_counts = 0
+    turn_counts = 1
     cur = c.BLACK
     pass_count = 0
 
     print(c.GAME_START)
 
-    for _ in range(c.ROWS * c.COLS):
+    for _ in range(c.ROWS * c.COLS - 4):
+        draw_board()
         valid_squares = check_valid(cur)
 
         if len(valid_squares) > 0:
             pass_count = 0
 
-            draw_board()
-
             count_stones()
+
+            print(valid_squares)
 
             move = (
                 player_move(valid_squares)
@@ -62,7 +67,7 @@ def play() -> None:
                 print(c.SURRENDER)
                 return
 
-            check_around(move[0], move[1])
+            check_around(move[0], move[1], cur)
 
             turn_counts += 1
         else:
@@ -79,46 +84,47 @@ def play() -> None:
     print(result())
 
 
-def check_valid(cur):
+def check_valid(cur) -> list:
     valid_squares = []
 
     for y in range(1, c.ROWS + 1):
-        for x in range(1, c.COLS):
+        for x in range(1, c.COLS + 1):
             front = check_around(y, x, cur)
 
             if v.board[y][x] == c.SPACE and front is not None:
-                valid_squares.append(v.board[y][x])
+                valid_squares.append([y, x])
 
-    print(type(valid_squares))
     return valid_squares
 
 
-def check_around(y, x, cur):
+def check_around(y, x, cur) -> list:
     aroy = y
     arox = x
 
     for coey in range(-1, 2):
-        aroy += coey
+        aroy = y + coey
 
         for coex in range(-1, 2):
-            arox += coex
+            if coey != 0 or coex != 0:
+                arox = x + coex
 
-            if v.board[aroy][arox] == cur * -1:
-                front = check_front(aroy, arox, coey, coex, cur)
+                if v.board[aroy][arox] == cur * -1:
+                    front = check_front(aroy, arox, coey, coex, cur)
 
-                caller = inspect.stack()[1].function
+                    caller = inspect.stack()[1].function
 
-                if caller == "check_valid":
-                    print(type(front))
-                    return front
-                else:
-                    froy = front[0]
-                    frox = front[1]
+                    if front is not None:
+                        if caller == "check_valid":
+                            return front
+                        else:
+                            froy = front[0]
+                            frox = front[1]
 
-                    reverse(froy, frox, coey, coex, cur)
+                            reverse(froy, frox, coey, coex, cur)
+                            v.board[y][x] = cur
 
 
-def check_front(aroy, arox, coey, coex, cur):
+def check_front(aroy, arox, coey, coex, cur) -> list:
     froy = aroy
     frox = arox
 
@@ -129,40 +135,39 @@ def check_front(aroy, arox, coey, coex, cur):
         if v.board[froy][frox] == cur:
             return [froy, frox]
 
-    return
-
 
 def draw_board() -> None:
     print(" ")
     for x in range(1, c.COLS + 1):
-        print(" " * 2, x, end="")
+        print(" ", x, end="")
 
     draw_line()
 
     for y in range(1, c.ROWS + 1):
         print(y, end="|")
 
-        for x in range(1, c.COLS):
+        for x in range(1, c.COLS + 1):
             if v.board[y][x] == c.BLACK:
-                print("●", end="|")
+                print("⚫", end="|")
             elif v.board[y][x] == c.WHITE:
-                print("◯", end="|")
+                print("⚪", end="|")
             else:
                 print("　", end="|")
-
-        print()
 
         draw_line()
 
 
 def draw_line() -> None:
+    print()
+    print(" ", end="")
+
     for _ in range(c.COLS):
         print("+ー", end="")
 
     print("+")
 
 
-def count_stones():
+def count_stones() -> list:
     bc = wc = 0
 
     for y in range(1, c.ROWS + 1):
@@ -174,11 +179,10 @@ def count_stones():
 
     print(c.BC, bc, " ", c.WC, wc)
 
-    print(type([bc, wc]))
     return [bc, wc]
 
 
-def player_move(valid_squares):
+def player_move(valid_squares) -> list:
     print(c.PLAYER_MOVE_CALLED)
 
     while True:
@@ -187,16 +191,20 @@ def player_move(valid_squares):
             x = int(input(c.PROMPT_X))
             move = [y, x]
 
-            return move
+            for s in valid_squares:
+                if move == s or move == [-1, -1]:
+                    return move
+
+            print(c.INPUT_ERROR)
         except ValueError:
             print(c.INPUT_ERROR)
 
 
-def com_move(valid_squares):
+def com_move(valid_squares) -> list:
     print(c.COM_THINKING)
     time.sleep(2)
 
-    return valid_squares[random.randint(0, len(valid_squares))]
+    return valid_squares[random.randint(0, len(valid_squares) - 1)]
 
 
 def reverse(y, x, coey, coex, cur) -> None:
@@ -209,10 +217,8 @@ def reverse(y, x, coey, coex, cur) -> None:
 
 def result() -> str:
     print(c.GAME_OVER)
-
+    draw_board()
     final_counts = count_stones()
-
-    print(c.BC, final_counts[0], c.WC, final_counts[1])
 
     if final_counts[0] > final_counts[1]:
         return c.BLACK_WIN

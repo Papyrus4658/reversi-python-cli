@@ -7,7 +7,7 @@ WALL = 9
 GREETING = "ようこそ!\nここではリバーシをプレイできます。"
 
 SELECT_TURN_CALLED = "先手/後手を選択します。"
-PROMPT_SELECT_TURN = "先手なら" + BLACK + "、後手なら" + WHITE + "を入力> "
+# PROMPT_SELECT_TURN = "先手なら", BLACK, "、後手なら", WHITE, "を入力> "
 
 GAME_START = "対局開始"
 

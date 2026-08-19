@@ -46,7 +46,7 @@ def play() -> None:
 
     print(c.GAME_START)
 
-    for _ in range(c.ROWS * c.COLS - 4):
+    while current_turn < (c.ROWS * c.COLS - 4):
         draw_board()
         valid_squares = check_valid(cur)
 

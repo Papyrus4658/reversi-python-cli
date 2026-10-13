@@ -1,18 +1,11 @@
-リバーシのアプリ。
+リバーシをプレイできます。
 
-コマンドラインでプレイ可能。
+Pythonの勉強中に開発しました。
 
-Pythonの復習用に開発。
+非常に弱いです。
 
----
-# スクリーンショット
-![先手/後手の選択](./screenshots/select_stone.png)
+![対局開始](./imgs/start.png)
 
-![対局開始](./screenshots/start_game.png)
+![対局中](./imgs/playing.png)
 
-![打つマスの入力](./screenshots/input_move.png)
-
-![手番の交代](./screenshots/change_turn.png)
-
-![終局](./screenshots/end_game.png)
----
+![終局](./imgs/end.png)
